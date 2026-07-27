@@ -79,7 +79,7 @@ export const styles = stylex.create({
 	},
 	queryListPaneInspecting: {
 		backgroundColor: "var(--color-background-body)",
-		width: "40%",
+		width: "30%",
 		[mobile]: {
 			width: 0,
 		},
@@ -386,7 +386,7 @@ export const styles = stylex.create({
 		opacity: 1,
 		pointerEvents: "auto",
 		transform: "translateX(0)",
-		width: "60%",
+		width: "70%",
 		[mobile]: {
 			borderInlineStartWidth: 0,
 			width: "100%",

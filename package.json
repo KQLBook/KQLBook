@@ -27,7 +27,7 @@
     "@astryxdesign/core": "0.1.8",
     "@astryxdesign/theme-neutral": "0.1.8",
     "@kusto/language-service-next": "12.4.1",
-    "@opennextjs/cloudflare": "^1.19.9",
+    "@opennextjs/cloudflare": "1.20.2",
     "@stylexjs/stylex": "0.19.0",
     "better-auth": "1.6.25",
     "next": "16.2.11",
@@ -50,6 +50,6 @@
     "tailwindcss": "^4",
     "typescript": "^5.7.4",
     "vitest": "4.1.10",
-    "wrangler": "^4.114.0"
+    "wrangler": "4.114.0"
   }
 }

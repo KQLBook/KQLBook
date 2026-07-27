@@ -34,6 +34,14 @@ or successful execution. Those checks require the target Microsoft environment.
 
 ![KQL Book architecture](docs/images/kql-book-architecture.png)
 
+The diagram is generated from
+[`docs/diagrams/kql_book_architecture.py`](docs/diagrams/kql_book_architecture.py):
+
+```bash
+python3 -m pip install -r docs/diagrams/requirements.txt
+python3 docs/diagrams/kql_book_architecture.py
+```
+
 A user searches from the website, and KQL Book checks its query collection for
 the closest matches. If the wording does not match well, it can look for queries
 with a similar meaning. AI can draft a new query when the search does not find a
