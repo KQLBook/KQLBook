@@ -1,0 +1,44 @@
+@import "@astryxdesign/core/reset.css";
+@import "@astryxdesign/core/astryx.css";
+@import "../styles/kql-book.css";
+
+/* Project StyleX rules are generated at this marker. */
+@stylex;
+
+:root {
+	color-scheme: light;
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	background: #ffffff;
+	color: var(--color-text-primary);
+	font-family: var(--font-family-body);
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+}
+
+::selection {
+	background: var(--color-background-blue);
+	color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}

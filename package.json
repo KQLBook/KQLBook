@@ -1,0 +1,55 @@
+{
+  "name": "kqlbook",
+  "version": "0.1.0",
+  "private": true,
+  "astryx": {
+    "theme": "@astryxdesign/theme-neutral"
+  },
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "theme:build": "astryx theme build ./src/styles/kqlBookTheme.ts",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.local.jsonc",
+    "db:seed:local": "wrangler d1 execute DB --local --config wrangler.local.jsonc --file=migrations/local/0001_demo_seed.sql",
+    "db:ingest:kqlsearch:local": "node scripts/run-import-kqlsearch-manifest.mjs",
+    "db:audit:corpus": "node scripts/run-audit-corpus-quality.mjs",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@astryxdesign/core": "0.1.8",
+    "@astryxdesign/theme-neutral": "0.1.8",
+    "@kusto/language-service-next": "12.4.1",
+    "@opennextjs/cloudflare": "^1.19.9",
+    "@stylexjs/stylex": "0.19.0",
+    "better-auth": "1.6.25",
+    "next": "16.2.11",
+    "react": "^19.1.7",
+    "react-dom": "^19.1.7",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@astryxdesign/cli": "0.1.8",
+    "@eslint/eslintrc": "^3",
+    "@stylexswc/nextjs-plugin": "0.18.0",
+    "@stylexswc/postcss-plugin": "0.18.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.1.7",
+    "@types/react-dom": "^19.1.7",
+    "esbuild": "0.25.4",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.11",
+    "tailwindcss": "^4",
+    "typescript": "^5.7.4",
+    "vitest": "4.1.10",
+    "wrangler": "^4.114.0"
+  }
+}

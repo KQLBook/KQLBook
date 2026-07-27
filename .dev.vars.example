@@ -1,0 +1,14 @@
+NEXTJS_ENV=development
+BETTER_AUTH_SECRET=replace-with-at-least-32-random-characters
+BETTER_AUTH_URL=http://localhost:3000
+GITHUB_CLIENT_ID=replace-with-local-github-oauth-client-id
+GITHUB_CLIENT_SECRET=replace-with-local-github-oauth-client-secret
+OPENROUTER_API_KEY=replace-with-restricted-openrouter-key
+TURNSTILE_SECRET_KEY=replace-with-turnstile-secret
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=replace-with-turnstile-site-key
+ADMIN_GITHUB_IDS=comma-separated-immutable-github-account-ids
+EMBEDDING_SYNC_SECRET=replace-with-long-random-embedding-secret
+INGESTION_SYNC_SECRET=replace-with-long-random-ingestion-secret
+GITHUB_INGESTION_TOKEN=replace-with-optional-read-only-github-token
+AI_ALWAYS_REQUIRE_TURNSTILE=false
+ALLOW_LOCAL_AI_WITHOUT_RATE_LIMITER=false

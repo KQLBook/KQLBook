@@ -1,0 +1,9 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="brand-arrow-gradient" x1="5" y1="27" x2="27" y2="5" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#2F5BFF"/>
+<stop offset="1" stop-color="#9B5CFF"/>
+</linearGradient>
+</defs>
+<path d="M10.1 9L25 7L23 21.9" stroke="url(#brand-arrow-gradient)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
