@@ -1,5 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
@@ -10,6 +11,7 @@ import {
 	mapStoredQuery,
 	type QueryRecord,
 } from "@/components/kql/sample-data";
+import { getCurrentUser } from "@/lib/auth/session";
 import { getQueryById, isRepositoryError } from "@/lib/db/repository";
 
 type QueryPageProps = {
@@ -18,35 +20,40 @@ type QueryPageProps = {
 
 export const dynamic = "force-dynamic";
 
-const loadPublicQuery = cache(async (id: string): Promise<QueryRecord | null> => {
-	try {
-		const { env } = getCloudflareContext();
-		const stored = await getQueryById(env.DB, id, null);
-		if (
-			stored.visibility !== "public" ||
-			stored.moderationStatus !== "visible"
-		) {
-			return null;
-		}
-		return mapStoredQuery(stored);
-	} catch (error) {
-		if (isRepositoryError(error) && error.status === 404) {
-			return null;
-		}
+const loadPublicQuery = cache(
+	async (
+		id: string,
+		viewerId: string | null,
+	): Promise<QueryRecord | null> => {
+		try {
+			const { env } = getCloudflareContext();
+			const stored = await getQueryById(env.DB, id, viewerId);
+			if (
+				stored.visibility !== "public" ||
+				stored.moderationStatus !== "visible"
+			) {
+				return null;
+			}
+			return mapStoredQuery(stored);
+		} catch (error) {
+			if (isRepositoryError(error) && error.status === 404) {
+				return null;
+			}
 
-		// Local previews can still render the bundled demo if D1 itself cannot
-		// be reached. A D1 404 never falls back, so unpublished or deleted seed
-		// records cannot be exposed by the demo copy.
-		const sample = findSampleQuery(id);
-		return sample?.visibility === "public" ? sample : null;
-	}
-});
+			// Local previews can still render the bundled demo if D1 itself cannot
+			// be reached. A D1 404 never falls back, so unpublished or deleted seed
+			// records cannot be exposed by the demo copy.
+			const sample = findSampleQuery(id);
+			return sample?.visibility === "public" ? sample : null;
+		}
+	},
+);
 
 export async function generateMetadata({
 	params,
 }: QueryPageProps): Promise<Metadata> {
 	const { id } = await params;
-	const query = await loadPublicQuery(id);
+	const query = await loadPublicQuery(id, null);
 
 	if (!query) {
 		return {
@@ -76,7 +83,8 @@ export async function generateMetadata({
 
 export default async function PublicQueryPage({ params }: QueryPageProps) {
 	const { id } = await params;
-	const query = await loadPublicQuery(id);
+	const viewer = await getCurrentUser(await headers());
+	const query = await loadPublicQuery(id, viewer?.id ?? null);
 
 	if (!query) {
 		notFound();

@@ -1,10 +1,14 @@
 import { AiServiceError, OperationTimeoutError } from "./errors";
 import { runWithTimeout } from "./timeout";
-import { OPENROUTER_MODEL, type OpenRouterModel } from "./types";
+import {
+	DEEPSEEK_BASE_URL,
+	DEEPSEEK_MODEL,
+	type DeepSeekModel,
+} from "./types";
 
 type JsonSchema = Record<string, unknown>;
 
-interface OpenRouterErrorBody {
+interface DeepSeekErrorBody {
 	error?: {
 		code?: number;
 		message?: string;
@@ -14,17 +18,17 @@ interface OpenRouterErrorBody {
 	};
 }
 
-interface OpenRouterMessage {
+interface DeepSeekMessage {
 	content?: unknown;
 }
 
-interface OpenRouterResponse extends OpenRouterErrorBody {
+interface DeepSeekResponse extends DeepSeekErrorBody {
 	choices?: Array<{
-		message?: OpenRouterMessage;
+		message?: DeepSeekMessage;
 	}>;
 }
 
-export interface OpenRouterStructuredRequest<T> {
+export interface DeepSeekStructuredRequest<T> {
 	name: string;
 	schema: JsonSchema;
 	system: string;
@@ -34,14 +38,34 @@ export interface OpenRouterStructuredRequest<T> {
 	signal?: AbortSignal;
 }
 
-export interface OpenRouterClientOptions {
-	apiKey: string;
+export interface DeepSeekApiKeyBinding {
+	get(): Promise<string>;
+}
+
+export interface DeepSeekClientOptions {
+	apiKey: string | DeepSeekApiKeyBinding;
 	fetch?: typeof fetch;
-	model?: OpenRouterModel;
+	model?: DeepSeekModel;
 	baseUrl?: string;
 	timeoutMs?: number;
-	siteUrl?: string;
-	appName?: string;
+}
+
+async function apiKeyValue(
+	source: string | DeepSeekApiKeyBinding,
+): Promise<string> {
+	if (typeof source === "string") {
+		return source;
+	}
+
+	try {
+		return await source.get();
+	} catch (error) {
+		throw new AiServiceError(
+			"configuration_error",
+			"AI credentials could not be read.",
+			{ status: 503, cause: error },
+		);
+	}
 }
 
 function parseRetryAfter(value: string | null): number | undefined {
@@ -100,7 +124,7 @@ function errorFromStatus(
 	}
 }
 
-function messageContent(message: OpenRouterMessage | undefined): string {
+function messageContent(message: DeepSeekMessage | undefined): string {
 	const content = message?.content;
 	if (typeof content === "string") {
 		return content;
@@ -123,48 +147,41 @@ function messageContent(message: OpenRouterMessage | undefined): string {
 	return "";
 }
 
-export class OpenRouterClient {
-	readonly #apiKey: string;
+export class DeepSeekClient {
+	readonly #apiKey: string | DeepSeekApiKeyBinding;
 	readonly #fetch: typeof fetch;
-	readonly #model: OpenRouterModel;
+	readonly #model: DeepSeekModel;
 	readonly #baseUrl: string;
 	readonly #timeoutMs: number;
-	readonly #siteUrl?: string;
-	readonly #appName?: string;
 
-	constructor(options: OpenRouterClientOptions) {
+	constructor(options: DeepSeekClientOptions) {
 		this.#apiKey = options.apiKey;
 		this.#fetch = options.fetch ?? fetch;
-		this.#model = options.model ?? OPENROUTER_MODEL;
-		this.#baseUrl = options.baseUrl ?? "https://openrouter.ai/api/v1";
+		this.#model = options.model ?? DEEPSEEK_MODEL;
+		this.#baseUrl = (options.baseUrl ?? DEEPSEEK_BASE_URL).replace(/\/+$/, "");
 		this.#timeoutMs = options.timeoutMs ?? 15_000;
-		this.#siteUrl = options.siteUrl;
-		this.#appName = options.appName;
 	}
 
-	get model(): OpenRouterModel {
+	get model(): DeepSeekModel {
 		return this.#model;
 	}
 
-	async structured<T>(request: OpenRouterStructuredRequest<T>): Promise<T> {
-		if (!this.#apiKey) {
-			throw new AiServiceError("configuration_error", "AI generation is not configured.", {
-				status: 503,
-			});
-		}
-
+	async structured<T>(request: DeepSeekStructuredRequest<T>): Promise<T> {
 		try {
 			return await runWithTimeout(async (signal) => {
+				const apiKey = await apiKeyValue(this.#apiKey);
+				if (!apiKey) {
+					throw new AiServiceError(
+						"configuration_error",
+						"AI generation is not configured.",
+						{ status: 503 },
+					);
+				}
+
 				const headers = new Headers({
-					Authorization: `Bearer ${this.#apiKey}`,
+					Authorization: `Bearer ${apiKey}`,
 					"Content-Type": "application/json",
 				});
-				if (this.#siteUrl) {
-					headers.set("HTTP-Referer", this.#siteUrl);
-				}
-				if (this.#appName) {
-					headers.set("X-Title", this.#appName);
-				}
 
 				const response = await this.#fetch(`${this.#baseUrl}/chat/completions`, {
 					method: "POST",
@@ -173,19 +190,18 @@ export class OpenRouterClient {
 					body: JSON.stringify({
 						model: this.#model,
 						messages: [
-							{ role: "system", content: request.system },
+							{
+								role: "system",
+								content: [
+									request.system,
+									`Return one valid JSON object named ${request.name} matching this JSON Schema:`,
+									JSON.stringify(request.schema),
+								].join("\n"),
+							},
 							{ role: "user", content: request.user },
 						],
 						response_format: {
-							type: "json_schema",
-							json_schema: {
-								name: request.name,
-								strict: true,
-								schema: request.schema,
-							},
-						},
-						provider: {
-							require_parameters: true,
+							type: "json_object",
 						},
 						temperature: 0.1,
 						max_tokens: request.maxTokens,
@@ -193,9 +209,9 @@ export class OpenRouterClient {
 					}),
 				});
 
-				let body: OpenRouterResponse;
+				let body: DeepSeekResponse;
 				try {
-					body = (await response.json()) as OpenRouterResponse;
+					body = (await response.json()) as DeepSeekResponse;
 				} catch (error) {
 					throw new AiServiceError(
 						"invalid_response",
@@ -205,9 +221,12 @@ export class OpenRouterClient {
 				}
 
 				if (!response.ok || body.error) {
-					const upstreamStatus = body.error?.code ?? response.status;
-						throw errorFromStatus(
-							upstreamStatus,
+					const upstreamStatus =
+						typeof body.error?.code === "number"
+							? body.error.code
+							: response.status;
+					throw errorFromStatus(
+						upstreamStatus,
 							parseRetryAfter(response.headers.get("Retry-After")),
 						);
 				}

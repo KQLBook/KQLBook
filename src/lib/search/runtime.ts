@@ -1,8 +1,8 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 import type { GenerationGuard } from "@/lib/ai/abuse-control";
-import { OpenRouterQueryGenerator } from "@/lib/ai/generation";
-import { OpenRouterIntentExtractor } from "@/lib/ai/intent";
+import { DeepSeekQueryGenerator } from "@/lib/ai/generation";
+import { DeepSeekIntentExtractor } from "@/lib/ai/intent";
 import { createAiRuntime } from "@/lib/ai/runtime";
 import type { GenerationPort } from "@/lib/ai/types";
 import { WorkersAiEmbedder, type WorkersAiLike } from "@/lib/ai/workers-ai";
@@ -34,20 +34,20 @@ export interface SearchRuntime {
 
 export function createSearchRuntime(): SearchRuntime {
 	const env = getCloudflareContext().env as unknown as SearchRuntimeEnv;
-	const { openRouter, guard } = createAiRuntime();
+	const { deepSeek, guard } = createAiRuntime();
 	const d1 = new D1SearchAdapter(env.DB);
 	const embedding = new WorkersAiEmbedder(env.AI);
 	const searchService = new SearchService({
 		lexical: d1,
 		authorization: d1,
-		intent: new OpenRouterIntentExtractor(openRouter),
+		intent: new DeepSeekIntentExtractor(deepSeek),
 		embedding,
 		semantic: new CloudflareVectorSearch(env.VECTORIZE),
 	});
 	return {
 		db: env.DB,
 		searchService,
-		generator: new OpenRouterQueryGenerator(openRouter),
+		generator: new DeepSeekQueryGenerator(deepSeek),
 		guard,
 		outboxProcessor: new EmbeddingOutboxProcessor({
 			store: new D1EmbeddingOutboxStore(env.DB),

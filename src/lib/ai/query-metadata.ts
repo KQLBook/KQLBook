@@ -8,8 +8,8 @@ import {
 	normalizeSearchText,
 } from "../search/normalize";
 import type { KqlDialect } from "../search/types";
+import type { DeepSeekClient } from "./deepseek";
 import { AiServiceError } from "./errors";
-import type { OpenRouterClient } from "./openrouter";
 
 const MAX_TABLES = 20;
 const MAX_TAGS = 12;
@@ -226,10 +226,10 @@ function verifiedTables(kql: string, providerTables: string[]): {
 	};
 }
 
-export class OpenRouterQueryMetadataAnalyzer implements QueryMetadataPort {
-	readonly #client: OpenRouterClient;
+export class DeepSeekQueryMetadataAnalyzer implements QueryMetadataPort {
+	readonly #client: DeepSeekClient;
 
-	constructor(client: OpenRouterClient) {
+	constructor(client: DeepSeekClient) {
 		this.#client = client;
 	}
 

@@ -1,8 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 
 const mobile = "@media (max-width: 760px)";
-const splitCompact = "@media (max-width: 1125px)";
-const splitWide = "@media (min-width: 1500px)";
 const shortViewport = "@media (max-height: 420px)";
 const reducedMotion = "@media (prefers-reduced-motion: reduce)";
 
@@ -81,13 +79,7 @@ export const styles = stylex.create({
 	},
 	queryListPaneInspecting: {
 		backgroundColor: "var(--color-background-body)",
-		width: "32vw",
-		[splitCompact]: {
-			width: 360,
-		},
-		[splitWide]: {
-			width: 480,
-		},
+		width: "40%",
 		[mobile]: {
 			width: 0,
 		},
@@ -394,13 +386,7 @@ export const styles = stylex.create({
 		opacity: 1,
 		pointerEvents: "auto",
 		transform: "translateX(0)",
-		width: "68vw",
-		[splitCompact]: {
-			width: "calc(100% - 360px)",
-		},
-		[splitWide]: {
-			width: "calc(100% - 480px)",
-		},
+		width: "60%",
 		[mobile]: {
 			borderInlineStartWidth: 0,
 			width: "100%",

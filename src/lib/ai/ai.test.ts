@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { GenerationGuard } from "./abuse-control";
-import { OpenRouterClient } from "./openrouter";
+import { DeepSeekClient } from "./deepseek";
 import { WorkersAiEmbedder } from "./workers-ai";
 
-describe("OpenRouterClient", () => {
-	it("requests strict structured output and validates the response", async () => {
+describe("DeepSeekClient", () => {
+	it("requests JSON output from the direct DeepSeek API and validates it", async () => {
 		const fetchMock = vi.fn().mockResolvedValue(
 			Response.json({
 				choices: [{ message: { content: "{\"value\":\"ok\"}" } }],
 			}),
 		);
-		const client = new OpenRouterClient({
+		const client = new DeepSeekClient({
 			apiKey: "test-key",
 			fetch: fetchMock,
 		});
@@ -31,13 +31,75 @@ describe("OpenRouterClient", () => {
 		});
 
 		expect(output).toEqual({ value: "ok" });
+		expect(fetchMock.mock.calls[0][0]).toBe(
+			"https://api.deepseek.com/chat/completions",
+		);
 		const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-		expect(body.response_format.json_schema.strict).toBe(true);
-		expect(body.provider.require_parameters).toBe(true);
+		expect(body.model).toBe("deepseek-v4-flash");
+		expect(body.response_format).toEqual({ type: "json_object" });
+		expect(body).not.toHaveProperty("provider");
+		expect(body.messages[0].content).toContain(
+			'"required":["value"]',
+		);
+	});
+
+	it("resolves an account Secrets Store binding before sending a request", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			Response.json({
+				choices: [{ message: { content: "{\"value\":\"ok\"}" } }],
+			}),
+		);
+		const get = vi.fn().mockResolvedValue("stored-deepseek-key");
+		const client = new DeepSeekClient({
+			apiKey: { get },
+			fetch: fetchMock,
+		});
+
+		await client.structured({
+			name: "test",
+			schema: {
+				type: "object",
+				properties: { value: { type: "string" } },
+				required: ["value"],
+				additionalProperties: false,
+			},
+			system: "Return data.",
+			user: "{}",
+			validate: (value) => value as { value: string },
+			maxTokens: 20,
+		});
+
+		expect(get).toHaveBeenCalledOnce();
+		expect(fetchMock.mock.calls[0][1].headers.get("Authorization")).toBe(
+			"Bearer stored-deepseek-key",
+		);
+	});
+
+	it("maps Secrets Store read failures to a configuration error", async () => {
+		const client = new DeepSeekClient({
+			apiKey: {
+				get: vi.fn().mockRejectedValue(new Error("binding unavailable")),
+			},
+			fetch: vi.fn(),
+		});
+
+		await expect(
+			client.structured({
+				name: "test",
+				schema: { type: "object" },
+				system: "Return data.",
+				user: "{}",
+				validate: (value) => value,
+				maxTokens: 20,
+			}),
+		).rejects.toMatchObject({
+			code: "configuration_error",
+			status: 503,
+		});
 	});
 
 	it("maps exhausted-credit responses to a recoverable API error", async () => {
-		const client = new OpenRouterClient({
+		const client = new DeepSeekClient({
 			apiKey: "test-key",
 			fetch: vi.fn().mockResolvedValue(
 				Response.json(
@@ -63,7 +125,7 @@ describe("OpenRouterClient", () => {
 	});
 
 	it("does not expose an unmapped provider error message", async () => {
-		const client = new OpenRouterClient({
+		const client = new DeepSeekClient({
 			apiKey: "test-key",
 			fetch: vi.fn().mockResolvedValue(
 				Response.json(
@@ -94,7 +156,7 @@ describe("OpenRouterClient", () => {
 	});
 
 	it("times out even when an injected fetch does not observe AbortSignal", async () => {
-		const client = new OpenRouterClient({
+		const client = new DeepSeekClient({
 			apiKey: "test-key",
 			fetch: vi.fn().mockReturnValue(new Promise(() => undefined)),
 			timeoutMs: 5,

@@ -1,7 +1,7 @@
 import { isKqlDialect, isRecord, normalizeSearchText } from "../search/normalize";
 import type { KqlDialect, SearchResult } from "../search/types";
+import type { DeepSeekClient } from "./deepseek";
 import { AiServiceError } from "./errors";
-import type { OpenRouterClient } from "./openrouter";
 import {
 	type GeneratedQuery,
 	type GenerationInput,
@@ -121,10 +121,10 @@ function supportingContext(
 		}));
 }
 
-export class OpenRouterQueryGenerator implements GenerationPort {
-	readonly #client: OpenRouterClient;
+export class DeepSeekQueryGenerator implements GenerationPort {
+	readonly #client: DeepSeekClient;
 
-	constructor(client: OpenRouterClient) {
+	constructor(client: DeepSeekClient) {
 		this.#client = client;
 	}
 

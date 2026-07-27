@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "kqlbook",
+	"name": "prod",
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-07-26",
 	"compatibility_flags": [
@@ -25,7 +25,7 @@
 			// Self-reference service binding, the service name must match the worker name
 			// see https://opennext.js.org/cloudflare/caching
 			"binding": "WORKER_SELF_REFERENCE",
-			"service": "kqlbook"
+			"service": "prod"
 		}
 	],
 	"d1_databases": [
@@ -72,11 +72,17 @@
 			"binding": "GITHUB_CLIENT_SECRET",
 			"store_id": "17a1510cff21480caeaa3e9ad8df980c",
 			"secret_name": "github-client-secret"
+		},
+		{
+			"binding": "DEEPSEEK_API_KEY",
+			"store_id": "17a1510cff21480caeaa3e9ad8df980c",
+			"secret_name": "deepseek-api"
 		}
 	],
 	"vars": {
-		"APP_URL": "https://kqlbook.com",
-		"OPENROUTER_MODEL": "deepseek/deepseek-v4-flash"
+		"APP_URL": "https://prod.kqlsearch.workers.dev",
+		"DEEPSEEK_BASE_URL": "https://api.deepseek.com",
+		"DEEPSEEK_MODEL": "deepseek-v4-flash"
 	},
 	"observability": {
 		"enabled": true

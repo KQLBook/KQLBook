@@ -5,21 +5,21 @@ import {
 	GenerationGuard,
 	type RateLimiterLike,
 } from "./abuse-control";
-import { OpenRouterClient } from "./openrouter";
-import type { OpenRouterModel } from "./types";
+import { DeepSeekClient } from "./deepseek";
+import type { DeepSeekModel } from "./types";
 
 interface AiRuntimeEnv {
 	AI_RATE_LIMITER?: RateLimiterLike;
-	OPENROUTER_API_KEY?: string;
-	OPENROUTER_MODEL?: OpenRouterModel;
+	DEEPSEEK_API_KEY?: string | SecretsStoreSecret;
+	DEEPSEEK_BASE_URL?: string;
+	DEEPSEEK_MODEL?: DeepSeekModel;
 	TURNSTILE_SECRET_KEY?: string;
-	APP_URL?: string;
 	ALLOW_LOCAL_AI_WITHOUT_RATE_LIMITER?: string;
 	AI_ALWAYS_REQUIRE_TURNSTILE?: string;
 }
 
 export interface AiRuntime {
-	openRouter: OpenRouterClient;
+	deepSeek: DeepSeekClient;
 	guard: GenerationGuard;
 }
 
@@ -32,11 +32,10 @@ export function createAiRuntime(): AiRuntime {
 		: undefined;
 
 	return {
-		openRouter: new OpenRouterClient({
-			apiKey: env.OPENROUTER_API_KEY ?? "",
-			model: env.OPENROUTER_MODEL,
-			siteUrl: env.APP_URL,
-			appName: "KQL Book",
+		deepSeek: new DeepSeekClient({
+			apiKey: env.DEEPSEEK_API_KEY ?? "",
+			baseUrl: env.DEEPSEEK_BASE_URL,
+			model: env.DEEPSEEK_MODEL,
 		}),
 		guard: new GenerationGuard({
 			rateLimiter: env.AI_RATE_LIMITER,

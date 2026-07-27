@@ -1,6 +1,6 @@
 import { requireCurrentUser } from "@/lib/auth/session";
 import { createQuery, listOwnedQueries } from "@/lib/db/repository";
-import { OpenRouterQueryMetadataAnalyzer } from "@/lib/ai/query-metadata";
+import { DeepSeekQueryMetadataAnalyzer } from "@/lib/ai/query-metadata";
 import { createAiRuntime } from "@/lib/ai/runtime";
 
 import {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   return handleCreateQueryRequest(request, {
     resolveCurrentUser: requireCurrentUser,
     guard: ai.guard,
-    metadata: new OpenRouterQueryMetadataAnalyzer(ai.openRouter),
+    metadata: new DeepSeekQueryMetadataAnalyzer(ai.deepSeek),
     persist: (input) => createQuery(getDatabase(), input),
   });
 }

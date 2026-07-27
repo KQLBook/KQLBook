@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { OpenRouterQueryGenerator } from "../src/lib/ai/generation";
-import type { OpenRouterClient } from "../src/lib/ai/openrouter";
+import type { DeepSeekClient } from "../src/lib/ai/deepseek";
+import { DeepSeekQueryGenerator } from "../src/lib/ai/generation";
 import type { SearchDependencies } from "../src/lib/search/ports";
 import { SearchService } from "../src/lib/search/service";
 import type {
@@ -179,7 +179,7 @@ describe("search privacy across the retrieval pipeline", () => {
 	});
 });
 
-describe("private context sent to OpenRouter", () => {
+describe("private context sent to DeepSeek", () => {
 	it("includes private supporting results only after explicit acknowledgement", async () => {
 		const requests: Array<{ user: string }> = [];
 		const client = {
@@ -200,8 +200,8 @@ describe("private context sent to OpenRouter", () => {
 				},
 			),
 		};
-		const generator = new OpenRouterQueryGenerator(
-			client as unknown as OpenRouterClient,
+		const generator = new DeepSeekQueryGenerator(
+			client as unknown as DeepSeekClient,
 		);
 		const searchRequest: SearchRequest = {
 			q: "failed sign-ins",

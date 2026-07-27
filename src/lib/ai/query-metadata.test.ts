@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { OpenRouterClient } from "./openrouter";
-import { OpenRouterQueryMetadataAnalyzer } from "./query-metadata";
+import { DeepSeekClient } from "./deepseek";
+import { DeepSeekQueryMetadataAnalyzer } from "./query-metadata";
 
 function clientResponse(payload: Record<string, unknown>) {
 	const fetchMock = vi.fn().mockResolvedValue(
@@ -9,18 +9,18 @@ function clientResponse(payload: Record<string, unknown>) {
 			choices: [{ message: { content: JSON.stringify(payload) } }],
 		}),
 	);
-	const client = new OpenRouterClient({
+	const client = new DeepSeekClient({
 		apiKey: "test-key",
 		fetch: fetchMock,
 	});
 
 	return {
 		fetchMock,
-		analyzer: new OpenRouterQueryMetadataAnalyzer(client),
+		analyzer: new DeepSeekQueryMetadataAnalyzer(client),
 	};
 }
 
-describe("OpenRouterQueryMetadataAnalyzer", () => {
+describe("DeepSeekQueryMetadataAnalyzer", () => {
 	it("returns normalized metadata and deterministic KQL operators", async () => {
 		const { analyzer, fetchMock } = clientResponse({
 			dialect: "sentinel",
@@ -44,16 +44,10 @@ describe("OpenRouterQueryMetadataAnalyzer", () => {
 		});
 
 		const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-		expect(body.response_format.json_schema).toMatchObject({
-			strict: true,
-			schema: {
-				additionalProperties: false,
-				properties: {
-					tables: { maxItems: 20 },
-					tags: { maxItems: 12 },
-				},
-			},
-		});
+		expect(body.response_format).toEqual({ type: "json_object" });
+		expect(body.messages[0].content).toContain('"additionalProperties":false');
+		expect(body.messages[0].content).toContain('"maxItems":20');
+		expect(body.messages[0].content).toContain('"maxItems":12');
 		expect(body.messages[0].content).toContain("untrusted data");
 		const prompt = JSON.parse(body.messages[1].content);
 		expect(prompt).toEqual({

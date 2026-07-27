@@ -1,0 +1,47 @@
+<svg
+  width="2500"
+  height="800"
+  viewBox="0 0 2500 800"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="logo-title logo-description"
+>
+  <title id="logo-title">KQL Book</title>
+  <desc id="logo-description">KQL Book wordmark with a symmetric blue-to-violet chevron.</desc>
+  <defs>
+    <linearGradient
+      id="kql-book-arrow-gradient"
+      x1="16"
+      y1="6.5"
+      x2="16"
+      y2="22"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop offset="0" stop-color="#2F5BFF" />
+      <stop offset="1" stop-color="#9B5CFF" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(72 144) scale(18)">
+    <path
+      d="M6.5 22L16 6.5L25.5 22"
+      stroke="url(#kql-book-arrow-gradient)"
+      stroke-width="7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <text
+    x="637"
+    y="550"
+    fill="#171717"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="360"
+    letter-spacing="-10"
+  >
+    <tspan font-weight="700">KQL</tspan>
+    <tspan dx="58" font-weight="500">Book</tspan>
+  </text>
+</svg>

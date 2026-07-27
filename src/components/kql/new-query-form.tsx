@@ -396,19 +396,14 @@ export function NewQueryForm() {
 				<p {...stylex.props(styles.aiProcessingDisclosure)}>
 					The query is parsed but not executed. Tenant tables, columns,
 					functions, and permissions are not verified. The title, KQL, and
-					explanation are sent to OpenRouter and its selected model provider
-					to identify the dialect, tables, and tags, including for private
-					queries.
+					explanation are sent directly to the DeepSeek API to identify the
+					dialect, tables, and tags, including for private queries.
 				</p>
 
 				<div {...stylex.props(styles.formActions)}>
 					<Button label="Cancel" variant="ghost" href="/" />
 					<Button
-						label={
-							visibility === "public"
-								? "Verify KQL and publish"
-								: "Verify KQL and save"
-						}
+						label="Save query"
 						variant="primary"
 						type="submit"
 						isLoading={isSaving}

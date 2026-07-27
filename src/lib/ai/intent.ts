@@ -1,7 +1,7 @@
 import { isKqlDialect, isRecord, normalizeSearchText } from "../search/normalize";
 import type { IntentExtractionPort } from "../search/ports";
 import type { SearchIntent, SearchRequest } from "../search/types";
-import type { OpenRouterClient } from "./openrouter";
+import type { DeepSeekClient } from "./deepseek";
 
 const INTENT_SCHEMA = {
 	type: "object",
@@ -112,10 +112,10 @@ function validateIntent(value: unknown): SearchIntent {
 	};
 }
 
-export class OpenRouterIntentExtractor implements IntentExtractionPort {
-	readonly #client: OpenRouterClient;
+export class DeepSeekIntentExtractor implements IntentExtractionPort {
+	readonly #client: DeepSeekClient;
 
-	constructor(client: OpenRouterClient) {
+	constructor(client: DeepSeekClient) {
 		this.#client = client;
 	}
 
@@ -146,4 +146,3 @@ export class OpenRouterIntentExtractor implements IntentExtractionPort {
 		});
 	}
 }
-
