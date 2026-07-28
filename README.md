@@ -10,37 +10,15 @@ You can search public queries, read the code, check the original source, and
 save examples for later. Signed-in users can also write their own queries. New
 queries stay private unless the author chooses to publish them.
 
-KQL Book shows queries but does not run them against a Microsoft environment.
-You still need to review and test each query in your own lab or workspace.
-
 Before a signed-in user's query is saved, the backend checks it with Microsoft's
 Kusto parser. Syntax errors, management commands, incomplete declaration-only
 text, common non-KQL formats, and supported-dialect violations are rejected.
 The same check runs on edits and before an older private query is published.
 Secret detection remains a nonblocking warning.
 
-Parsing cannot confirm tenant-specific tables, columns, functions, permissions,
-or successful execution. Those checks require the target Microsoft environment.
-
-## What KQL Book covers
-
-- Microsoft Sentinel and Log Analytics
-- Microsoft Defender XDR Advanced Hunting
-- Azure Data Explorer and Microsoft Fabric
-- Azure Resource Graph
-- Microsoft Intune Device Query
-
 ## How it works
 
 ![KQL Book architecture](docs/images/kql-book-architecture.png)
-
-The diagram is generated from
-[`docs/diagrams/kql_book_architecture.py`](docs/diagrams/kql_book_architecture.py):
-
-```bash
-python3 -m pip install -r docs/diagrams/requirements.txt
-python3 docs/diagrams/kql_book_architecture.py
-```
 
 A user searches from the website, and KQL Book checks its query collection for
 the closest matches. If the wording does not match well, it can look for queries
