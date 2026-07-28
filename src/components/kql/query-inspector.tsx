@@ -8,7 +8,7 @@ import { Icon } from "@astryxdesign/core/Icon";
 import { useToast } from "@astryxdesign/core/Toast";
 import Link from "next/link";
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { tokenizeKql } from "@/lib/kql/tokenize";
 import { styles } from "@/styles/kql.stylex";
@@ -19,6 +19,7 @@ type QueryInspectorProps = {
 	query: QueryRecord;
 	onClose?: () => void;
 	isPublicPage?: boolean;
+	focusCloseOnMount?: boolean;
 };
 
 function GithubGlyph() {
@@ -83,10 +84,12 @@ export function QueryInspector({
 	query,
 	onClose,
 	isPublicPage = false,
+	focusCloseOnMount = false,
 }: QueryInspectorProps) {
 	const [isSaved, setIsSaved] = useState(query.starredByViewer ?? false);
 	const [status, setStatus] = useState("");
 	const [isSavePending, setIsSavePending] = useState(false);
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const toast = useToast();
 	const githubRepositoryUrl =
 		query.sourceRepositoryUrl ??
@@ -172,6 +175,12 @@ export function QueryInspector({
 				? "GitHub star count loading"
 				: "GitHub star count unavailable"
 			: `${fullNumber.format(githubStarCount)} GitHub stars`;
+
+	useEffect(() => {
+		if (focusCloseOnMount) {
+			closeButtonRef.current?.focus();
+		}
+	}, [focusCloseOnMount]);
 
 	const copyQuery = async () => {
 		try {
@@ -313,12 +322,14 @@ export function QueryInspector({
 					) : null}
 					{onClose ? (
 						<Button
+							ref={closeButtonRef}
 							label="Close query details"
 							variant="ghost"
 							size="sm"
 							isIconOnly
 							icon={<Icon icon="close" />}
 							onClick={onClose}
+							xstyle={styles.inspectorCloseButton}
 						/>
 					) : null}
 				</div>

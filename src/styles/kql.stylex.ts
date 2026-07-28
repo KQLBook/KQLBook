@@ -54,6 +54,7 @@ export const styles = stylex.create({
 		height: "calc(100dvh - 48px)",
 		minHeight: 0,
 		overflow: "hidden",
+		position: "relative",
 		width: "100%",
 	},
 	searchWorkspaceInspecting: {
@@ -80,9 +81,6 @@ export const styles = stylex.create({
 	queryListPaneInspecting: {
 		backgroundColor: "var(--color-background-body)",
 		width: "30%",
-		[mobile]: {
-			width: 0,
-		},
 	},
 	queryListContent: {
 		marginInline: "auto",
@@ -373,7 +371,12 @@ export const styles = stylex.create({
 		width: 0,
 		willChange: "width, opacity, transform",
 		[mobile]: {
-			transform: "translateX(32px)",
+			insetBlock: 0,
+			insetInlineStart: 0,
+			position: "absolute",
+			transform: "translateX(100%)",
+			width: "100%",
+			zIndex: 4,
 		},
 		[reducedMotion]: {
 			transitionDuration: "1ms",
@@ -389,6 +392,7 @@ export const styles = stylex.create({
 		width: "70%",
 		[mobile]: {
 			borderInlineStartWidth: 0,
+			transform: "translateX(0)",
 			width: "100%",
 		},
 	},
@@ -397,6 +401,7 @@ export const styles = stylex.create({
 		maxWidth: 920,
 		paddingBlock: 26,
 		paddingInline: 30,
+		position: "relative",
 		[mobile]: {
 			paddingBlock: 18,
 			paddingInline: 16,
@@ -415,6 +420,7 @@ export const styles = stylex.create({
 		[mobile]: {
 			alignItems: "stretch",
 			flexDirection: "column",
+			paddingInlineEnd: 44,
 		},
 	},
 	inspectorTitle: {
@@ -433,6 +439,15 @@ export const styles = stylex.create({
 	inspectorHeaderActions: {
 		[mobile]: {
 			width: "100%",
+		},
+	},
+	inspectorCloseButton: {
+		position: "static",
+		[mobile]: {
+			insetBlockStart: 14,
+			insetInlineEnd: 16,
+			position: "absolute",
+			zIndex: 1,
 		},
 	},
 	githubOrigin: {

@@ -19,6 +19,7 @@ import {
 	useEffect,
 	useRef,
 	useState,
+	useSyncExternalStore,
 } from "react";
 
 import type { CursorPage, QueryListItem } from "@/lib/db/types";
@@ -42,6 +43,7 @@ const DEVICE_ID_STORAGE_KEY = "kqlbook.device-id.v1";
 const POPULAR_PAGE_SIZE = 20;
 const POPULAR_LOAD_THRESHOLD = 640;
 const LANDING_SEARCH_FADE_DISTANCE = 240;
+const MOBILE_INSPECTOR_MEDIA_QUERY = "(max-width: 760px)";
 const LANDING_COMPOSER_STYLE: CSSProperties &
 	Record<
 		"--_chat-composer-radius" | "--_chat-composer-padding",
@@ -50,6 +52,20 @@ const LANDING_COMPOSER_STYLE: CSSProperties &
 	"--_chat-composer-radius": "24px",
 	"--_chat-composer-padding": "8px",
 };
+
+function subscribeToMobileInspectorViewport(onChange: () => void) {
+	const mediaQuery = window.matchMedia(MOBILE_INSPECTOR_MEDIA_QUERY);
+	mediaQuery.addEventListener("change", onChange);
+	return () => mediaQuery.removeEventListener("change", onChange);
+}
+
+function getMobileInspectorViewportSnapshot() {
+	return window.matchMedia(MOBILE_INSPECTOR_MEDIA_QUERY).matches;
+}
+
+function getServerMobileInspectorViewportSnapshot() {
+	return false;
+}
 
 function getOrCreateDeviceId(): string {
 	try {
@@ -452,12 +468,19 @@ export function SearchWorkspace({
 	const [turnstileToken, setTurnstileToken] = useState("");
 	const [challengeKey, setChallengeKey] = useState(0);
 	const [landingScrollTop, setLandingScrollTop] = useState(0);
+	const isMobileInspectorViewport = useSyncExternalStore(
+		subscribeToMobileInspectorViewport,
+		getMobileInspectorViewportSnapshot,
+		getServerMobileInspectorViewportSnapshot,
+	);
 	const activeSearchKey = useRef<string | null>(null);
 	const landingScrollRef = useRef<HTMLDivElement>(null);
 	const popularInitialLoadStarted = useRef(false);
 	const popularLoadInFlight = useRef(false);
 	const inspectorRevealFrame = useRef<number | null>(null);
+	const inspectorFocusFrame = useRef<number | null>(null);
 	const inspectorCloseTimer = useRef<number | null>(null);
+	const inspectorOpenedAsMobileOverlay = useRef(false);
 	const listScrollFrame = useRef<number | null>(null);
 	const listScrollStartedAt = useRef<number | null>(null);
 	const listScrollFrom = useRef(0);
@@ -568,6 +591,10 @@ export function SearchWorkspace({
 			window.cancelAnimationFrame(inspectorRevealFrame.current);
 			inspectorRevealFrame.current = null;
 		}
+		if (inspectorFocusFrame.current !== null) {
+			window.cancelAnimationFrame(inspectorFocusFrame.current);
+			inspectorFocusFrame.current = null;
+		}
 		if (inspectorCloseTimer.current !== null) {
 			window.clearTimeout(inspectorCloseTimer.current);
 			inspectorCloseTimer.current = null;
@@ -580,6 +607,8 @@ export function SearchWorkspace({
 		if (isInspectorOpen) {
 			return;
 		}
+		inspectorOpenedAsMobileOverlay.current =
+			getMobileInspectorViewportSnapshot();
 		inspectorRevealFrame.current = window.requestAnimationFrame(() => {
 			setIsInspectorOpen(true);
 			inspectorRevealFrame.current = null;
@@ -593,10 +622,15 @@ export function SearchWorkspace({
 		const selectedRow = list?.querySelector<HTMLElement>(
 			'[data-testid="selected-query-row"]',
 		);
-		if (selectedRow) {
+		const isMobileViewportNow = getMobileInspectorViewportSnapshot();
+		if (selectedRow && !isMobileViewportNow) {
 			selectedRow.focus({ preventScroll: true });
 		}
-		if (list && !listScrollChangedByUser.current) {
+		if (
+			!inspectorOpenedAsMobileOverlay.current &&
+			list &&
+			!listScrollChangedByUser.current
+		) {
 			startListScrollAnimation("restore", {
 				target: listScrollBeforeInspector.current,
 			});
@@ -604,6 +638,13 @@ export function SearchWorkspace({
 			clearListScrollAnimation();
 		}
 		setIsInspectorOpen(false);
+		if (selectedRow && isMobileViewportNow) {
+			inspectorFocusFrame.current = window.requestAnimationFrame(() => {
+				selectedRow.focus({ preventScroll: true });
+				inspectorFocusFrame.current = null;
+			});
+		}
+		inspectorOpenedAsMobileOverlay.current = false;
 
 		const prefersReducedMotion = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
@@ -685,6 +726,9 @@ export function SearchWorkspace({
 		return () => {
 			if (inspectorRevealFrame.current !== null) {
 				window.cancelAnimationFrame(inspectorRevealFrame.current);
+			}
+			if (inspectorFocusFrame.current !== null) {
+				window.cancelAnimationFrame(inspectorFocusFrame.current);
 			}
 			if (inspectorCloseTimer.current !== null) {
 				window.clearTimeout(inspectorCloseTimer.current);
@@ -943,9 +987,13 @@ export function SearchWorkspace({
 		}
 		listScrollChangedByUser.current = false;
 		showInspector(record);
-		startListScrollAnimation("align-row", {
-			row: event.currentTarget,
-		});
+		if (getMobileInspectorViewportSnapshot()) {
+			clearListScrollAnimation();
+		} else {
+			startListScrollAnimation("align-row", {
+				row: event.currentTarget,
+			});
+		}
 		const requestSerial = detailRequestSerial.current + 1;
 		detailRequestSerial.current = requestSerial;
 
@@ -1198,6 +1246,13 @@ export function SearchWorkspace({
 		1,
 	);
 	const hasVisibleInspector = Boolean(selected && isInspectorOpen);
+	const hasMobileInspectorOverlay =
+		hasVisibleInspector && isMobileInspectorViewport;
+	const hasDesktopInspector =
+		hasVisibleInspector && !isMobileInspectorViewport;
+	const listSelectionIsSuppressed = Boolean(
+		selected && !isMobileInspectorViewport,
+	);
 
 	return (
 		<div
@@ -1211,6 +1266,8 @@ export function SearchWorkspace({
 				ref={landingScrollRef}
 				data-testid="query-list-scroll"
 				data-query-card-pane="true"
+				aria-hidden={hasMobileInspectorOverlay ? "true" : undefined}
+				inert={hasMobileInspectorOverlay ? true : undefined}
 				onPointerDown={() => {
 					if (isInspectorOpen) {
 						listScrollChangedByUser.current = true;
@@ -1233,10 +1290,10 @@ export function SearchWorkspace({
 				}}
 				{...stylex.props(
 					styles.queryListPane,
-					hasVisibleInspector ? styles.queryListPaneInspecting : null,
+					hasDesktopInspector ? styles.queryListPaneInspecting : null,
 				)}
 			>
-				{!hasSearched && !selected && landingScrollTop > 0 ? (
+				{!hasSearched && !listSelectionIsSuppressed && landingScrollTop > 0 ? (
 					<div
 						aria-hidden="true"
 						data-testid="landing-top-fade"
@@ -1247,7 +1304,7 @@ export function SearchWorkspace({
 				<div
 					{...stylex.props(
 						styles.queryListContent,
-						hasVisibleInspector
+						hasDesktopInspector
 							? null
 							: hasSearched
 								? styles.queryListContentResults
@@ -1256,11 +1313,11 @@ export function SearchWorkspace({
 				>
 					{hasSearched ? (
 						<div
-							aria-hidden={selected ? "true" : undefined}
-							inert={selected ? true : undefined}
+							aria-hidden={listSelectionIsSuppressed ? "true" : undefined}
+							inert={listSelectionIsSuppressed ? true : undefined}
 							{...stylex.props(
 								styles.resultsChrome,
-								selected ? styles.resultsChromeHidden : null,
+								listSelectionIsSuppressed ? styles.resultsChromeHidden : null,
 							)}
 						>
 							<div {...stylex.props(styles.searchedComposer)}>
@@ -1287,7 +1344,7 @@ export function SearchWorkspace({
 
 							{resultStatus}
 						</div>
-					) : !selected ? (
+					) : !listSelectionIsSuppressed ? (
 						<>
 							<div
 								{...stylex.props(styles.landingComposer)}
@@ -1312,7 +1369,7 @@ export function SearchWorkspace({
 						data-testid="popular-query-feed"
 						{...stylex.props(
 							styles.queryCollection,
-							hasVisibleInspector
+							hasDesktopInspector
 								? styles.queryCollectionInspecting
 								: null,
 						)}
@@ -1323,11 +1380,11 @@ export function SearchWorkspace({
 								selectedId={selected?.id}
 								onOpen={openQuery}
 								showScore={hasSearched}
-								isInspectorList={hasVisibleInspector}
+								isInspectorList={hasDesktopInspector}
 							/>
 						) : null}
 
-						{!hasSearched && !selected ? (
+						{!hasSearched && !listSelectionIsSuppressed ? (
 							<div
 								role="status"
 								aria-live="polite"
@@ -1355,7 +1412,7 @@ export function SearchWorkspace({
 							</div>
 						) : null}
 
-						{!selected ? noResults : null}
+						{!listSelectionIsSuppressed ? noResults : null}
 					</section>
 				</div>
 			</div>
@@ -1365,6 +1422,12 @@ export function SearchWorkspace({
 				aria-label="Query inspector"
 				data-testid="query-inspector"
 				inert={!hasVisibleInspector ? true : undefined}
+				onKeyDown={(event) => {
+					if (event.key === "Escape" && hasVisibleInspector) {
+						event.preventDefault();
+						closeInspector();
+					}
+				}}
 				{...stylex.props(
 					styles.inspector,
 					hasVisibleInspector ? styles.inspectorOpen : null,
@@ -1375,6 +1438,7 @@ export function SearchWorkspace({
 						key={selected.id}
 						query={selected}
 						onClose={closeInspector}
+						focusCloseOnMount={hasMobileInspectorOverlay}
 					/>
 				) : null}
 			</aside>
