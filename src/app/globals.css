@@ -6,7 +6,22 @@
 @stylex;
 
 :root {
+	color-scheme: light dark;
+}
+
+html[data-theme-preference="light"],
+html[data-theme-preference="light"] [data-astryx-theme="kql-book"] {
 	color-scheme: light;
+}
+
+html[data-theme-preference="dark"],
+html[data-theme-preference="dark"] [data-astryx-theme="kql-book"] {
+	color-scheme: dark;
+}
+
+html[data-theme-preference="system"],
+html[data-theme-preference="system"] [data-astryx-theme="kql-book"] {
+	color-scheme: light dark;
 }
 
 html,
@@ -15,7 +30,7 @@ body {
 }
 
 body {
-	background: #ffffff;
+	background: var(--color-background-surface);
 	color: var(--color-text-primary);
 	font-family: var(--font-family-body);
 }

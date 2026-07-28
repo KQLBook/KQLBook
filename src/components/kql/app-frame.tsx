@@ -22,6 +22,7 @@ import * as stylex from "@stylexjs/stylex";
 
 import { styles } from "@/styles/kql.stylex";
 import { BrandLogo } from "./brand-logo";
+import { ThemeMenu } from "./theme-menu";
 
 const destinations = [
 	{ label: "My queries", href: "/my-queries" },
@@ -220,13 +221,14 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
 									onClick={
 										isSearchPage ? handleSearchHeaderHome : undefined
 									}
-								/>
-							) : undefined
-						}
+									/>
+								) : undefined
+							}
 						endContent={
 							<div {...stylex.props(styles.authCluster)}>
 								{session?.user ? desktopNavigation : null}
 								{session?.user ? mobileNavigation : null}
+								<ThemeMenu />
 								{authentication}
 							</div>
 						}

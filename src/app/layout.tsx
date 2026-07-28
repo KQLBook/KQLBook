@@ -2,6 +2,33 @@ import type { Metadata } from "next";
 import "@stylexswc/webpack-plugin/stylex.css";
 import "./globals.css";
 import { Providers } from "./providers";
+import { THEME_STORAGE_KEY } from "@/lib/theme/preferences";
+
+const themeBootstrapScript = `
+	(function () {
+		var preference = "system";
+		try {
+			var savedPreference = window.localStorage.getItem("${THEME_STORAGE_KEY}");
+			if (
+				savedPreference === "light" ||
+				savedPreference === "dark"
+			) {
+				preference = savedPreference;
+			}
+		} catch (_) {}
+
+		document.documentElement.setAttribute(
+			"data-theme-preference",
+			preference
+		);
+
+		if (preference === "light" || preference === "dark") {
+			document.documentElement.setAttribute("data-theme", preference);
+		} else {
+			document.documentElement.removeAttribute("data-theme");
+		}
+	})();
+`;
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://kqlbook.com"),
@@ -44,9 +71,15 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" data-theme="light" suppressHydrationWarning>
+		<html
+			lang="en"
+			data-astryx-theme="kql-book"
+			data-theme-preference="system"
+			suppressHydrationWarning
+		>
 			<head>
 				<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+				<script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{

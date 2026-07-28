@@ -22,26 +22,23 @@ export const kqlBookTheme = defineTheme({
 				height: "44px",
 			},
 			"variant:primary": {
-				boxShadow:
-					"0 1px 2px rgb(0 0 0 / 10%), inset 0 0 0 1px rgb(0 0 0 / 4%)",
+				boxShadow: "0 1px 2px var(--color-shadow)",
 				":hover": {
-					boxShadow:
-						"0 2px 6px rgb(0 0 0 / 12%), inset 0 0 0 1px rgb(0 0 0 / 4%)",
+					boxShadow: "0 2px 6px var(--color-shadow)",
 				},
 			},
 			"variant:secondary": {
-				borderColor: "rgb(0 0 0 / 6%)",
+				borderColor: "var(--color-border)",
 				borderStyle: "solid",
 				borderWidth: "1px",
-				boxShadow: "0 1px 2px rgb(0 0 0 / 4%)",
+				boxShadow: "0 1px 2px var(--color-shadow)",
 				":hover": {
-					borderColor: "rgb(0 0 0 / 10%)",
-					boxShadow: "0 2px 5px rgb(0 0 0 / 7%)",
+					borderColor: "var(--color-border-emphasized)",
+					boxShadow: "0 2px 5px var(--color-shadow)",
 				},
 			},
 			"variant:destructive": {
-				boxShadow:
-					"0 1px 2px rgb(0 0 0 / 10%), inset 0 0 0 1px rgb(0 0 0 / 5%)",
+				boxShadow: "0 1px 2px var(--color-shadow)",
 			},
 		},
 	},

@@ -6,7 +6,7 @@ const reducedMotion = "@media (prefers-reduced-motion: reduce)";
 
 export const styles = stylex.create({
 	appShell: {
-		backgroundColor: "#ffffff",
+		backgroundColor: "var(--color-background-surface)",
 		minHeight: "100dvh",
 	},
 	navDesktop: {
@@ -29,11 +29,11 @@ export const styles = stylex.create({
 		gap: 8,
 	},
 	loginButton: {
-		backgroundColor: "#0d0d0d",
-		color: "#ffffff",
+		backgroundColor: "var(--color-accent)",
+		color: "var(--color-on-accent)",
 	},
 	searchPage: {
-		backgroundColor: "#ffffff",
+		backgroundColor: "var(--color-background-surface)",
 		marginInline: "auto",
 		maxWidth: 940,
 		minHeight: "calc(100dvh - 48px)",
@@ -49,7 +49,7 @@ export const styles = stylex.create({
 		paddingBlockStart: 38,
 	},
 	searchWorkspace: {
-		backgroundColor: "#ffffff",
+		backgroundColor: "var(--color-background-surface)",
 		display: "flex",
 		height: "calc(100dvh - 48px)",
 		minHeight: 0,
@@ -61,7 +61,7 @@ export const styles = stylex.create({
 		backgroundColor: "var(--color-background-surface)",
 	},
 	queryListPane: {
-		backgroundColor: "#ffffff",
+		backgroundColor: "var(--color-background-surface)",
 		flexShrink: 0,
 		height: "100%",
 		minWidth: 0,
@@ -131,7 +131,7 @@ export const styles = stylex.create({
 		paddingInline: 0,
 	},
 	searchLanding: {
-		backgroundColor: "#ffffff",
+		backgroundColor: "var(--color-background-surface)",
 		height: "calc(100dvh - 48px)",
 		minHeight: 0,
 		overflowX: "hidden",
@@ -144,7 +144,7 @@ export const styles = stylex.create({
 	},
 	landingTopFade: {
 		backgroundImage:
-			"linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.92) 42%, rgba(255, 255, 255, 0) 100%)",
+			"linear-gradient(to bottom, var(--color-background-surface) 0%, color-mix(in srgb, var(--color-background-surface) 92%, transparent) 42%, transparent 100%)",
 		height: 56,
 		insetBlockStart: 52,
 		insetInlineEnd: 0,
