@@ -54,5 +54,4 @@ next-env.d.ts
 
 !.dev.vars.example
 
-package-lock.json
 docs/diagrams/__pycache__/
